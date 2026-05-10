@@ -1,0 +1,30 @@
+{
+  "name": "mcp-gateway-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "packages/server-copilot",
+    "packages/server-antigravity",
+    "packages/server-cursor",
+    "packages/server-vscode",
+    "packages/gateway"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:shared": "npm run build -w packages/shared",
+    "build:servers": "npm run build -w packages/server-copilot -w packages/server-antigravity -w packages/server-cursor",
+    "build:gateway": "npm run build -w packages/gateway",
+    "dev:gateway": "npm run dev -w packages/gateway",
+    "typecheck": "tsc --build tsconfig.base.json",
+    "clean": "rm -rf packages/*/dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

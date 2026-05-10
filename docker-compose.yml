@@ -1,0 +1,24 @@
+services:
+  gateway:
+    build: .
+    container_name: mcp-gateway
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    env_file: .env
+    environment:
+      - GATEWAY_PORT=3000
+      - COPILOT_ASSETS_DIR=/app/copilot-assets
+      - ANTIGRAVITY_DATA_DIR=/data/antigravity
+      - CURSOR_CONFIG_DIR=/data/cursor-config
+      - CURSOR_WORKSPACE_DIR=/data/workspace
+    volumes:
+      - ./copilot-assets:/app/copilot-assets:ro
+      - ${ANTIGRAVITY_DATA_DIR:-~/.gemini/antigravity}:/data/antigravity:ro
+      - ${CURSOR_CONFIG_DIR:-~/.cursor}:/data/cursor-config:ro
+      - ${CURSOR_WORKSPACE_DIR:-.}:/data/workspace:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
