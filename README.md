@@ -106,35 +106,93 @@ copilot-assets/
 docker compose up --build
 ```
 
-### 4. Configurar tu Entorno
+### 4. Configuración Detallada por Entorno (IDE)
+
+El Gateway expone un único punto de acceso en `http://localhost:3000/sse`. A continuación, cómo configurarlo en cada herramienta:
 
 #### 4.1 Cursor IDE
-Copia el archivo de ejemplo a tu configuración de Cursor:
-```bash
-# Configuración global
-cp cursor-config/mcp.json.example ~/.cursor/mcp.json
-```
-Luego verifica en **Cursor Settings** -> **Features** -> **MCP** que el servidor aparezca conectado.
+Cursor permite configurar servidores MCP de forma global o por proyecto.
 
-#### 4.2 VSCode
-1. Instala una extensión cliente de MCP (ej. **Roo Code**, **Claude Dev** o la extensión oficial de MCP).
-2. En la configuración del servidor MCP de la extensión, añade:
-   - **Type**: `sse`
+**Opción A: Configuración Global (Recomendado)**
+1. Abre Cursor y ve a **Settings** (Icono de engranaje en la esquina superior derecha) -> **Cursor Settings**.
+2. Navega a **Features** -> **MCP Servers**.
+3. Haz clic en **+ Add New MCP Server**.
+4. Configura los siguientes campos:
+   - **Name**: `Gateway-Hub`
+   - **Type**: `SSE`
    - **URL**: `http://localhost:3000/sse`
+5. Haz clic en **Save**. Deberías ver un indicador verde indicando que está conectado.
 
-#### 4.3 Antigravity / Otros Agentes
-Para usar el Gateway desde este u otros asistentes de IA:
-1. Asegúrate de que el Gateway esté corriendo.
-2. Configura el endpoint SSE (`http://localhost:3000/sse`) en la sección de servidores MCP de tu agente.
-3. Ahora el agente podrá usar herramientas como `ls_ki` para acceder a tu conocimiento local.
+**Opción B: Archivo de Configuración Manual**
+Edita o crea el archivo en la siguiente ruta (según tu OS):
+- **macOS**: `~/Library/Application Support/Cursor/User/globalStorage/pro.antigravity.cursor/mcp.json`
+- **Windows**: `%APPDATA%\Cursor\User\globalStorage\pro.antigravity.cursor\mcp.json`
 
-### 5. Verificar
-
-```bash
-curl http://localhost:3000/health
+Contenido del JSON:
+```json
+{
+  "mcpServers": {
+    "gateway-hub": {
+      "url": "http://localhost:3000/sse"
+    }
+  }
+}
 ```
 
-Deberías ver una respuesta JSON con el estado de todos los servidores.
+#### 4.2 VSCode (vía Roo Code / Claude Dev)
+VSCode no tiene soporte MCP nativo aún, por lo que se recomienda usar extensiones como **Roo Code** o **Claude Dev**.
+
+**Pasos para Roo Code:**
+1. Abre la pestaña de **Roo Code** en la barra lateral.
+2. Haz clic en el icono de **Settings** (engranaje) dentro del panel de la extensión.
+3. Busca la sección **MCP Servers**.
+4. Haz clic en **Edit MCP Settings** (esto abrirá un archivo `mcp_settings.json`).
+5. Añade la configuración del Gateway en el objeto `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "gateway-hub": {
+      "kind": "sse",
+      "url": "http://localhost:3000/sse"
+    }
+  }
+}
+```
+6. Guarda el archivo. La extensión recargará automáticamente y verás las nuevas herramientas disponibles (ej. `ag_list_ki`).
+
+#### 4.3 Antigravity (Este Asistente)
+Para que este asistente pueda usar el Hub y acceder a tu conocimiento local:
+
+1. Localiza el directorio de configuración de Antigravity:
+   - **Ruta**: `~/.gemini/antigravity/mcp_config.json`
+2. Asegúrate de que el contenido incluya el gateway:
+
+```json
+{
+  "remoteServers": [
+    {
+      "name": "gateway-hub",
+      "url": "http://localhost:3000/sse",
+      "transport": "sse"
+    }
+  ]
+}
+```
+3. Reinicia la sesión del asistente o pide: "Actualiza tus herramientas MCP".
+
+---
+
+### 5. Verificación de Conectividad
+
+Una vez configurado en tu IDE, puedes probar que todo funciona preguntando al chat:
+- *"¿Cuáles son tus herramientas de Antigravity disponibles?"*
+- *"Usa la herramienta ls_ki para listar mi conocimiento."*
+
+Si el IDE reporta un error de conexión, verifica que el contenedor de Docker esté corriendo:
+```bash
+docker ps | grep mcp-gateway
+```
 
 ---
 
