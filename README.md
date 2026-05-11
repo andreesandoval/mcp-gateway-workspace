@@ -32,7 +32,7 @@ Este proyecto implementa un **MCP Gateway** que actúa como un proxy inverso par
 | **Antigravity Server** | Expone el conocimiento y contexto local a cualquier cliente MCP conectado |
 | **Cursor Server** | Gestiona la configuración de Cursor IDE: reglas (`.cursorrules`), configuración MCP y workspaces |
 
-El Gateway agrega todas las herramientas, recursos y prompts de los 3 servidores bajo un **namespace con prefijo** (`copilot_`, `antigravity_`, `cursor_`) para evitar colisiones de nombres.
+El Gateway agrega todas las herramientas, recursos y prompts de los servidores bajo un **namespace con prefijo corto** (`cp_`, `ag_`, `cs_`, `vs_`) para evitar colisiones y mejorar la velocidad de invocación. También se incluyen **alias globales** para las tareas más comunes.
 
 ---
 
@@ -152,13 +152,13 @@ Expone los assets personalizados de GitHub Copilot como herramientas y recursos 
 
 | Tool | Descripción |
 |------|-------------|
-| `copilot_list_agents` | Lista todos los agentes personalizados disponibles |
-| `copilot_read_agent` | Lee la definición completa de un agente (YAML frontmatter + instrucciones) |
-| `copilot_list_skills` | Lista todos los skills disponibles |
-| `copilot_read_skill` | Lee la definición de un skill específico |
-| `copilot_list_instructions` | Lista todas las instrucciones personalizadas |
-| `copilot_read_instruction` | Lee una instrucción específica |
-| `copilot_apply_agent_context` | Genera el contexto completo de un agente para inyectar en una conversación |
+| `cp_list_agents` | Lista todos los agentes personalizados disponibles |
+| `cp_read_agent` | Lee la definición completa de un agente (YAML frontmatter + instrucciones) |
+| `cp_list_skills` | Lista todos los skills disponibles |
+| `cp_read_skill` | Lee la definición de un skill específico |
+| `cp_list_instructions` | Lista todas las instrucciones personalizadas |
+| `cp_read_instruction` | Lee una instrucción específica |
+| `cp_apply_agent_context` | Genera el contexto completo de un agente para inyectar en una conversación |
 
 #### Resources
 
@@ -172,8 +172,8 @@ Expone los assets personalizados de GitHub Copilot como herramientas y recursos 
 
 | Prompt | Descripción |
 |--------|-------------|
-| `copilot_copilot-agent-prompt` | Genera un system prompt configurado con el contexto de un agente específico |
-| `copilot_copilot-review-prompt` | Prompt de code review siguiendo convenciones de Copilot |
+| `cp_agent-prompt` | Genera un system prompt configurado con el contexto de un agente específico |
+| `cp_review-prompt` | Prompt de code review siguiendo convenciones de Copilot |
 
 #### Formato de archivos `.agent.md`
 
@@ -197,11 +197,11 @@ Accede a los knowledge items y conversaciones almacenados localmente por Antigra
 
 | Tool | Descripción |
 |------|-------------|
-| `antigravity_list_knowledge_items` | Lista todos los knowledge items con sus metadatos |
-| `antigravity_read_knowledge_item` | Lee un knowledge item específico incluyendo sus artefactos |
-| `antigravity_list_conversations` | Lista las conversaciones recientes con un preview |
-| `antigravity_read_conversation` | Lee el overview completo de una conversación |
-| `antigravity_search_knowledge` | Busca knowledge items por keyword |
+| `ag_list_knowledge_items` | Lista todos los knowledge items con sus metadatos |
+| `ag_read_knowledge_item` | Lee un knowledge item específico incluyendo sus artefactos |
+| `ag_list_conversations` | Lista las conversaciones recientes con un preview |
+| `ag_read_conversation` | Lee el overview completo de una conversación |
+| `ag_search_knowledge` | Busca knowledge items por keyword |
 
 #### Resources
 
@@ -220,12 +220,12 @@ Gestiona la configuración de Cursor IDE programáticamente.
 
 | Tool | Descripción |
 |------|-------------|
-| `cursor_read_cursor_rules` | Lee el archivo `.cursorrules` del workspace |
-| `cursor_write_cursor_rules` | Escribe o actualiza el archivo `.cursorrules` |
-| `cursor_read_mcp_config` | Lee la configuración MCP actual de `mcp.json` |
-| `cursor_add_mcp_server` | Agrega un nuevo servidor MCP a la configuración |
-| `cursor_remove_mcp_server` | Elimina un servidor MCP de la configuración |
-| `cursor_list_workspaces` | Lista los workspaces conocidos de Cursor |
+| `cs_read_rules` | Lee el archivo `.cursorrules` del workspace |
+| `cs_write_rules` | Escribe o actualiza el archivo `.cursorrules` |
+| `cs_read_mcp_config` | Lee la configuración MCP actual de `mcp.json` |
+| `cs_add_mcp_server` | Agrega un nuevo servidor MCP a la configuración |
+| `cs_remove_mcp_server` | Elimina un servidor MCP de la configuración |
+| `cs_list_workspaces` | Lista los workspaces conocidos de Cursor |
 
 #### Resources
 
@@ -245,15 +245,28 @@ El gateway actúa como un **proxy inverso MCP** que:
 3. **Enruta** las llamadas entrantes al servidor backend correcto basándose en el prefijo
 4. **Expone** todo a través de un servidor HTTP con SSE
 
-### Namespacing
+### Namespacing (Prefijos Cortos)
 
-Todas las herramientas se prefijan con el nombre del servidor de origen:
+Para evitar nombres excesivamente largos, se utilizan los siguientes prefijos:
 
-```
-list_agents       → copilot_list_agents
-search_knowledge  → antigravity_search_knowledge
-read_cursor_rules → cursor_read_cursor_rules
-```
+| Prefijo | Servidor | Ejemplo |
+|---------|----------|---------|
+| `cp_` | Copilot | `cp_list_agents` |
+| `ag_` | Antigravity | `ag_search_knowledge` |
+| `cs_` | Cursor | `cs_read_rules` |
+| `vs_` | VSCode | `vs_read_settings` |
+
+### Alias Globales (Shorthand)
+
+El Gateway expone alias ultra-cortos para las herramientas más utilizadas, permitiendo invocarlas directamente:
+
+| Alias | Destino Real | Descripción |
+|-------|--------------|-------------|
+| `ls_ki` | `ag_list_knowledge_items` | Listar items de conocimiento |
+| `ls_agents` | `cp_list_agents` | Listar agentes de Copilot |
+| `ls_ws` | `cs_list_workspaces` | Listar workspaces |
+| `read_rules` | `cs_read_rules` | Leer .cursorrules |
+| `write_rules` | `cs_write_rules` | Escribir .cursorrules |
 
 ### Endpoints
 
