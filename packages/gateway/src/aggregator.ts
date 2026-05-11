@@ -46,10 +46,17 @@ export class Aggregator {
   private readonly toolRoutes = new Map<string, ToolRouteEntry>();
   private readonly resourceRoutes = new Map<string, ResourceRouteEntry>();
   private readonly promptRoutes = new Map<string, PromptRouteEntry>();
+  private readonly toolAliases = new Map<string, string>();
   private readonly logger: Logger;
 
   constructor(logLevel: LogLevel = "info") {
     this.logger = new Logger("aggregator", logLevel);
+    // Definir alias globales predeterminados para las herramientas más comunes
+    this.toolAliases.set("ls_agents", "cp_list_agents");
+    this.toolAliases.set("ls_ki", "ag_list_knowledge_items");
+    this.toolAliases.set("ls_ws", "cs_list_workspaces");
+    this.toolAliases.set("read_rules", "cs_read_cursor_rules");
+    this.toolAliases.set("write_rules", "cs_write_cursor_rules");
   }
 
   async aggregateTools(
@@ -68,11 +75,13 @@ export class Aggregator {
         for (const tool of result.tools) {
           const namespacedName = `${namespace}_${tool.name}`;
 
-          this.toolRoutes.set(namespacedName, {
+          const routeEntry = {
             originalName: tool.name,
             serverId,
             namespace,
-          });
+          };
+
+          this.toolRoutes.set(namespacedName, routeEntry);
 
           tools.push({
             name: namespacedName,
@@ -81,6 +90,19 @@ export class Aggregator {
               : `[${namespace}] ${tool.name}`,
             inputSchema: tool.inputSchema as Record<string, unknown>,
           });
+
+          // Registrar alias si existen para esta herramienta nombrespaceada
+          for (const [alias, target] of this.toolAliases.entries()) {
+            if (target === namespacedName) {
+              this.toolRoutes.set(alias, routeEntry);
+              tools.push({
+                name: alias,
+                description: `Alias for ${namespacedName}${tool.description ? ': ' + tool.description : ''}`,
+                inputSchema: tool.inputSchema as Record<string, unknown>,
+              });
+              this.logger.debug("Registered alias for tool", { alias, target });
+            }
+          }
         }
 
         this.logger.info("Aggregated tools from server", {

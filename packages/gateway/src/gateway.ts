@@ -19,10 +19,10 @@ import { ServerManager } from "./server-manager.js";
 import { Aggregator } from "./aggregator.js";
 
 const NAMESPACES = new Map<string, string>([
-  ["copilot", "copilot"],
-  ["antigravity", "antigravity"],
-  ["cursor", "cursor"],
-  ["vscode", "vscode"],
+  ["copilot", "cp"],
+  ["antigravity", "ag"],
+  ["cursor", "cs"],
+  ["vscode", "vs"],
 ]);
 
 const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
