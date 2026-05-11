@@ -106,17 +106,27 @@ copilot-assets/
 docker compose up --build
 ```
 
-### 4. Configurar Cursor IDE
+### 4. Configurar tu Entorno
 
+#### 4.1 Cursor IDE
 Copia el archivo de ejemplo a tu configuración de Cursor:
-
 ```bash
 # Configuración global
 cp cursor-config/mcp.json.example ~/.cursor/mcp.json
-
-# O configuración por proyecto
-cp cursor-config/mcp.json.example .cursor/mcp.json
 ```
+Luego verifica en **Cursor Settings** -> **Features** -> **MCP** que el servidor aparezca conectado.
+
+#### 4.2 VSCode
+1. Instala una extensión cliente de MCP (ej. **Roo Code**, **Claude Dev** o la extensión oficial de MCP).
+2. En la configuración del servidor MCP de la extensión, añade:
+   - **Type**: `sse`
+   - **URL**: `http://localhost:3000/sse`
+
+#### 4.3 Antigravity / Otros Agentes
+Para usar el Gateway desde este u otros asistentes de IA:
+1. Asegúrate de que el Gateway esté corriendo.
+2. Configura el endpoint SSE (`http://localhost:3000/sse`) en la sección de servidores MCP de tu agente.
+3. Ahora el agente podrá usar herramientas como `ls_ki` para acceder a tu conocimiento local.
 
 ### 5. Verificar
 
@@ -285,27 +295,6 @@ Authorization: Bearer <tu-token>
 ```
 
 ---
-
-## Configuración Multiproveedor
-
-### Cursor IDE
-Añadir a `mcp.json` (global o local):
-```json
-{
-  "mcpServers": {
-    "gateway": { "url": "http://localhost:3000/sse" }
-  }
-}
-```
-
-### VSCode
-1. Instalar la extensión **MCP** o usar un cliente compatible (como **Roo Code** o **Claude Dev**).
-2. En la configuración del cliente, añadir la URL del Gateway: `http://localhost:3000/sse`.
-
-### Antigravity (Assistant)
-El gateway ya incluye herramientas para que Antigravity lea su propia configuración. Para usar el gateway desde Antigravity:
-1. Configurar el gateway como un servidor MCP remoto en la configuración del asistente.
-2. Usar las herramientas con prefijo `antigravity_` para gestionar el conocimiento dinámico.
 
 ---
 
